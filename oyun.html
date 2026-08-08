@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Matematik Dehası</title>
+    <!-- PWA ve iOS Meta Etiketleri -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4f46e5">
+    <link rel="apple-touch-icon" href="https://cdn-icons-png.flaticon.com/512/3771/3771278.png">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-touch-callout: none;
+        }
+        .safe-area-padding {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+        }
+        .btn-active {
+            background-color: #4f46e5 !important;
+            border-color: #818cf8 !important;
+        }
+        .btn-inactive {
+            background-color: #334155 !important;
+            border-color: transparent !important;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col justify-between safe-area-padding font-sans">
+
+    <!-- AYARLAR EKRANI -->
+    <div id="screen-setup" class="p-5 max-w-lg mx-auto w-full space-y-6 overflow-y-auto">
+        <header class="text-center py-4">
+            <h1 class="text-3xl font-extrabold tracking-tight text-indigo-400">Matematik Dehası</h1>
+            <p class="text-xs text-slate-400 mt-1">Zihinsel Antrenman & Oyun</p>
+        </header>
+
+        <!-- Basamak Sayısı -->
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <label class="block text-sm font-semibold mb-2 text-indigo-300">Basamak Sayısı</label>
+            <div class="grid grid-cols-5 gap-2">
+                <button type="button" data-group="digit" data-val="1" onclick="setOption('digits', 1, this)" class="digit-btn btn-inactive p-2 rounded-xl text-sm font-bold border">1</button>
+                <button type="button" data-group="digit" data-val="2" onclick="setOption('digits', 2, this)" class="digit-btn btn-active p-2 rounded-xl text-sm font-bold border">2</button>
+                <button type="button" data-group="digit" data-val="3" onclick="setOption('digits', 3, this)" class="digit-btn btn-inactive p-2 rounded-xl text-sm font-bold border">3</button>
+                <button type="button" data-group="digit" data-val="4" onclick="setOption('digits', 4, this)" class="digit-btn btn-inactive p-2 rounded-xl text-sm font-bold border">4</button>
+                <button type="button" data-group="digit" data-val="0" onclick="setOption('digits', 0, this)" class="digit-btn btn-inactive p-2 rounded-xl text-sm font-bold border">Karma</button>
+            </div>
+        </div>
+
+        <!-- İşlem Türleri -->
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <label class="block text-sm font-semibold mb-2 text-indigo-300">İşlem Türleri</label>
+            <div class="grid grid-cols-2 gap-2 text-sm">
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-add" checked class="w-4 h-4 accent-indigo-500">
+                    <span>Toplama (+)</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-sub" checked class="w-4 h-4 accent-indigo-500">
+                    <span>Çıkarma (-)</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-mul" class="w-4 h-4 accent-indigo-500">
+                    <span>Çarpma (×)</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-div" class="w-4 h-4 accent-indigo-500">
+                    <span>Bölme (÷)</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-paren" class="w-4 h-4 accent-indigo-500">
+                    <span>Parantez ( )</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="op-exp" class="w-4 h-4 accent-indigo-500">
+                    <span>Üslü Sayı (xⁿ)</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Sayı Tipi (Çoklu Seçilebilir Yapı) -->
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <label class="block text-sm font-semibold mb-2 text-indigo-300">Sayı Tipi (Birden Fazla Seçilebilir)</label>
+            <div class="grid grid-cols-3 gap-2 text-sm">
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="type-pos" checked class="w-4 h-4 accent-indigo-500">
+                    <span>Pozitif</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="type-neg" class="w-4 h-4 accent-indigo-500">
+                    <span>Negatif</span>
+                </label>
+                <label class="flex items-center space-x-2 bg-slate-700 p-2.5 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="type-dec" class="w-4 h-4 accent-indigo-500">
+                    <span>Ondalıklı</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Süre Ayarı -->
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700 space-y-3">
+            <label class="block text-sm font-semibold text-indigo-300">Süre Modu</label>
+            <div class="grid grid-cols-3 gap-2">
+                <button type="button" data-group="timeMode" data-val="none" onclick="setTimeModeOption('none', this)" class="time-btn btn-active p-2 rounded-xl text-xs font-bold border">Süresiz</button>
+                <button type="button" data-group="timeMode" data-val="per_q" onclick="setTimeModeOption('per_q', this)" class="time-btn btn-inactive p-2 rounded-xl text-xs font-bold border">Soru Başı Süre</button>
+                <button type="button" data-group="timeMode" data-val="total" onclick="setTimeModeOption('total', this)" class="time-btn btn-inactive p-2 rounded-xl text-xs font-bold border">Toplam Süre</button>
+            </div>
+            
+            <div id="custom-time-box" class="hidden flex items-center justify-between bg-slate-700 p-3 rounded-xl border border-slate-600">
+                <span class="text-xs font-medium text-slate-300" id="time-input-label">Süre Süresi:</span>
+                <div class="flex items-center space-x-2">
+                    <input type="number" id="custom-seconds" value="10" min="1" max="600" class="w-20 bg-slate-800 border border-slate-500 rounded-lg p-1.5 text-center text-sm font-bold text-white focus:outline-none focus:border-indigo-400">
+                    <span class="text-xs text-slate-400">saniye</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cevap Formatı -->
+        <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <label class="block text-sm font-semibold mb-2 text-indigo-300">Cevap Formatı</label>
+            <div class="grid grid-cols-2 gap-2">
+                <button type="button" data-group="format" data-val="mc" onclick="setOption('format', 'mc', this)" class="format-btn btn-active p-2.5 rounded-xl text-xs font-bold border">4 Şıklı (Çoktan Seçmeli)</button>
+                <button type="button" data-group="format" data-val="input" onclick="setOption('format', 'input', this)" class="format-btn btn-inactive p-2.5 rounded-xl text-xs font-bold border">Sayı Klavyesi</button>
+            </div>
+        </div>
+
+        <button onclick="startGame()" class="w-full py-4 bg-emerald-500 hover:bg-emerald-600 text-white font-extrabold text-lg rounded-2xl shadow-lg transition active:scale-95">
+            OYUNA BAŞLA
+        </button>
+    </div>
+
+    <!-- OYUN EKRANI -->
+    <div id="screen-game" class="hidden flex-1 flex flex-col justify-between p-5 max-w-lg mx-auto w-full">
+        <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
+            <div>
+                <span class="text-xs text-slate-400 block">Puan</span>
+                <span id="score-display" class="text-xl font-bold text-emerald-400">0</span>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block">Kalan Süre</span>
+                <span id="timer-display" class="text-xl font-bold text-amber-400">∞</span>
+            </div>
+            <button onclick="exitGame()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-xl">Çıkış</button>
+        </div>
+
+        <div id="feedback-banner" class="hidden text-center py-2 px-4 rounded-xl font-black text-lg transition-all duration-200 my-2"></div>
+
+        <div class="my-auto py-8 text-center bg-slate-800/50 rounded-3xl border border-slate-700/50 my-2">
+            <span id="question-display" class="text-4xl md:text-5xl font-black tracking-wider text-white">12 + 15 = ?</span>
+            <div id="user-input-preview" class="h-8 mt-4 text-2xl font-bold text-indigo-400"></div>
+        </div>
+
+        <div id="mc-container" class="grid grid-cols-2 gap-3 mb-4"></div>
+
+        <div id="keypad-container" class="hidden grid grid-cols-3 gap-2 mb-2">
+            <button onclick="keypadInput('1')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">1</button>
+            <button onclick="keypadInput('2')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">2</button>
+            <button onclick="keypadInput('3')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">3</button>
+            <button onclick="keypadInput('4')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">4</button>
+            <button onclick="keypadInput('5')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">5</button>
+            <button onclick="keypadInput('6')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">6</button>
+            <button onclick="keypadInput('7')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">7</button>
+            <button onclick="keypadInput('8')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">8</button>
+            <button onclick="keypadInput('9')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">9</button>
+            <button onclick="keypadInput('-')" class="p-4 bg-slate-800 text-amber-400 rounded-2xl text-xl font-bold active:bg-slate-700">-</button>
+            <button onclick="keypadInput('0')" class="p-4 bg-slate-800 rounded-2xl text-xl font-bold active:bg-slate-700">0</button>
+            <button onclick="keypadInput('.')" class="p-4 bg-slate-800 text-amber-400 rounded-2xl text-xl font-bold active:bg-slate-700">.</button>
+            <button onclick="keypadClear()" class="p-3 bg-rose-900/50 text-rose-300 rounded-2xl font-bold text-sm active:bg-rose-800">Sil</button>
+            <button onclick="submitKeypadAnswer()" class="col-span-2 p-3 bg-indigo-600 rounded-2xl font-extrabold text-base active:bg-indigo-500">Gönder</button>
+        </div>
+    </div>
+
+    <!-- SONUÇ EKRANI -->
+    <div id="screen-result" class="hidden p-5 max-w-lg mx-auto w-full text-center my-auto space-y-6">
+        <div class="bg-slate-800 p-8 rounded-3xl border border-slate-700 space-y-4">
+            <h2 class="text-2xl font-bold text-slate-300">Oyun Bitti!</h2>
+            <div class="text-5xl font-black text-emerald-400" id="final-score">0</div>
+            <p class="text-sm text-slate-400">Toplam Puanınız</p>
+            <div class="pt-4 border-t border-slate-700 flex justify-around text-sm">
+                <div><span class="text-slate-400 block">Doğru</span><span id="stat-correct" class="font-bold text-emerald-400 text-lg">0</span></div>
+                <div><span class="text-slate-400 block">Yanlış</span><span id="stat-wrong" class="font-bold text-rose-400 text-lg">0</span></div>
+            </div>
+        </div>
+        <button onclick="exitGame()" class="w-full py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-lg rounded-2xl shadow-lg">
+            Tekrar Oyna
+        </button>
+    </div>
+
+    <!-- JS MANTIK -->
+    <script>
+        let config = {
+            digits: 2,
+            timeMode: 'none',
+            customSeconds: 10,
+            format: 'mc'
+        };
+
+        let gameState = {
+            score: 0,
+            correctCount: 0,
+            wrongCount: 0,
+            currentAnswer: 0,
+            typedInput: '',
+            timer: null,
+            timeLeft: 0,
+            isProcessing: false
+        };
+
+        // JavaScript Ondalık Hassasiyet Hatalarını Önleyen Yardımcı Fonksiyon
+        function cleanNumber(val) {
+            return Math.round((val + Number.EPSILON) * 100) / 100;
+        }
+
+        function setOption(key, value, element) {
+            config[key] = value;
+            const groupName = element.getAttribute('data-group');
+            document.querySelectorAll(`button[data-group="${groupName}"]`).forEach(btn => {
+                btn.classList.remove('btn-active');
+                btn.classList.add('btn-inactive');
+            });
+            element.classList.remove('btn-inactive');
+            element.classList.add('btn-active');
+        }
+
+        function setTimeModeOption(val, element) {
+            setOption('timeMode', val, element);
+            const box = document.getElementById('custom-time-box');
+            const label = document.getElementById('time-input-label');
+            
+            if (val === 'none') {
+                box.classList.add('hidden');
+            } else if (val === 'per_q') {
+                box.classList.remove('hidden');
+                label.innerText = 'Soru Başı Süre:';
+            } else if (val === 'total') {
+                box.classList.remove('hidden');
+                label.innerText = 'Toplam Oyun Süresi:';
+            }
+        }
+
+        function startGame() {
+            // En az bir sayı tipi seçili mi kontrolü
+            const isPos = document.getElementById('type-pos').checked;
+            const isNeg = document.getElementById('type-neg').checked;
+            if (!isPos && !isNeg) {
+                document.getElementById('type-pos').checked = true;
+            }
+
+            gameState.score = 0;
+            gameState.correctCount = 0;
+            gameState.wrongCount = 0;
+            gameState.isProcessing = false;
+            
+            let secVal = parseInt(document.getElementById('custom-seconds').value);
+            config.customSeconds = (isNaN(secVal) || secVal < 1) ? 10 : secVal;
+
+            document.getElementById('screen-setup').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-game').classList.remove('hidden');
+
+            if (config.format === 'mc') {
+                document.getElementById('mc-container').classList.remove('hidden');
+                document.getElementById('keypad-container').classList.add('hidden');
+            } else {
+                document.getElementById('mc-container').classList.add('hidden');
+                document.getElementById('keypad-container').classList.remove('hidden');
+            }
+
+            if (config.timeMode === 'total') {
+                gameState.timeLeft = config.customSeconds;
+                startTimer();
+            }
+
+            nextQuestion();
+        }
+
+        // Çoklu Sayı Tipi Seçimine Göre Sayı Üretici
+        function generateNumber(digits) {
+            const isPos = document.getElementById('type-pos').checked;
+            const isNeg = document.getElementById('type-neg').checked;
+            const isDec = document.getElementById('type-dec').checked;
+
+            let d = digits === 0 ? Math.floor(Math.random() * 3) + 1 : digits;
+            let min = Math.pow(10, d - 1);
+            let max = Math.pow(10, d) - 1;
+            if (d === 1) min = 1;
+
+            let num = Math.floor(Math.random() * (max - min + 1)) + min;
+
+            // Ondalıklı Sayı Üretimi (%50 İhtimalle)
+            if (isDec && Math.random() > 0.5) {
+                num = cleanNumber(num / 10);
+            }
+
+            // İşaret Belirleme
+            if (isPos && isNeg) {
+                if (Math.random() > 0.5) num = -num;
+            } else if (isNeg) {
+                num = -num;
+            }
+
+            return cleanNumber(num);
+        }
+
+        function nextQuestion() {
+            hideFeedback();
+            gameState.isProcessing = false;
+
+            if (config.timeMode === 'per_q') {
+                clearInterval(gameState.timer);
+                gameState.timeLeft = config.customSeconds;
+                startTimer();
+            }
+
+            document.getElementById('score-display').innerText = gameState.score;
+            gameState.typedInput = '';
+            document.getElementById('user-input-preview').innerText = '';
+
+            let ops = [];
+            if (document.getElementById('op-add').checked) ops.push('+');
+            if (document.getElementById('op-sub').checked) ops.push('-');
+            if (document.getElementById('op-mul').checked) ops.push('*');
+            if (document.getElementById('op-div').checked) ops.push('/');
+            if (document.getElementById('op-paren').checked) ops.push('()');
+            if (document.getElementById('op-exp').checked) ops.push('^');
+
+            if (ops.length === 0) ops = ['+'];
+            let chosenOp = ops[Math.floor(Math.random() * ops.length)];
+
+            let num1 = generateNumber(config.digits);
+            let num2 = generateNumber(config.digits);
+            let qText = '', ans = 0;
+
+            switch(chosenOp) {
+                case '+':
+                    ans = cleanNumber(num1 + num2);
+                    qText = `${num1} + ${num2}`;
+                    break;
+                case '-':
+                    ans = cleanNumber(num1 - num2);
+                    qText = `${num1} - ${num2}`;
+                    break;
+                case '*':
+                    ans = cleanNumber(num1 * num2);
+                    qText = `${num1} × ${num2}`;
+                    break;
+                case '/':
+                    num2 = num2 === 0 ? 1 : num2;
+                    ans = num1;
+                    let product = cleanNumber(num1 * num2);
+                    qText = `${product} ÷ ${num2}`;
+                    break;
+                case '^':
+                    let base = Math.floor(Math.random() * 8) + 1;
+                    let exp = Math.floor(Math.random() * 3) + 1;
+                    if (document.getElementById('type-neg').checked && Math.random() > 0.5) base = -base;
+                    ans = cleanNumber(Math.pow(base, exp));
+                    qText = `${base}<sup>${exp}</sup>`;
+                    break;
+                case '()':
+                    let num3 = generateNumber(1);
+                    ans = cleanNumber((num1 + num2) * num3);
+                    qText = `(${num1} + ${num2}) × ${num3}`;
+                    break;
+            }
+
+            gameState.currentAnswer = ans;
+            document.getElementById('question-display').innerHTML = qText + " = ?";
+
+            if (config.format === 'mc') {
+                renderMultipleChoice(ans);
+            }
+        }
+
+        // Akıllı Şık Üretici (Aynı Son Basamağa / Ondalığa Sahip Şıklar Üretir)
+        function renderMultipleChoice(correctAns) {
+            let options = [correctAns];
+            const isInteger = Number.isInteger(correctAns);
+            
+            // Tam sayılarda 10'un katları eklenir ki son basamak hep aynı kalsın (örn: 216 -> 206, 226, 196)
+            // Ondalıklı sayılarda 1'in katları eklenir ki ondalık kısmı aynı kalsın (örn: 14.6 -> 13.6, 15.6, 12.6)
+            const stepUnit = isInteger ? 10 : 1;
+            
+            const steps = [
+                stepUnit, -stepUnit, 
+                stepUnit * 2, -stepUnit * 2, 
+                stepUnit * 3, -stepUnit * 3,
+                stepUnit * 5, -stepUnit * 5
+            ];
+
+            // Adımları karıştır
+            steps.sort(() => Math.random() - 0.5);
+
+            const isNegAllowed = document.getElementById('type-neg').checked;
+
+            for (let step of steps) {
+                if (options.length >= 4) break;
+
+                let wrong = cleanNumber(correctAns + step);
+
+                // Negatif izin verilmiyorsa ve sonuç negatifse pozitife çevir
+                if (!isNegAllowed && wrong < 0) {
+                    wrong = cleanNumber(correctAns + Math.abs(step));
+                }
+
+                if (!options.includes(wrong)) {
+                    options.push(wrong);
+                }
+            }
+
+            // Hâlâ 4 şık dolmadıysa ekstra çeldirici üret
+            let fallbackCount = 1;
+            while (options.length < 4) {
+                let wrong = cleanNumber(correctAns + (stepUnit * fallbackCount * 4));
+                if (!options.includes(wrong)) options.push(wrong);
+                fallbackCount++;
+            }
+
+            // Şıkları Karıştır
+            options.sort(() => Math.random() - 0.5);
+
+            const container = document.getElementById('mc-container');
+            container.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "p-5 bg-slate-800 hover:bg-slate-700 text-2xl font-bold rounded-2xl border border-slate-700 active:scale-95 transition";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt);
+                container.appendChild(btn);
+            });
+        }
+
+        function checkAnswer(userAns) {
+            if (gameState.isProcessing) return;
+            gameState.isProcessing = true;
+
+            // Ondalıklı tolerans ile hassas cevap kontrolü
+            const isCorrect = Math.abs(parseFloat(userAns) - gameState.currentAnswer) < 0.001;
+
+            if (isCorrect) {
+                gameState.score += 10;
+                gameState.correctCount++;
+                showFeedback(true, "Doğru! (+10 Puan)");
+                triggerHaptic(true);
+            } else {
+                gameState.score -= 5;
+                gameState.wrongCount++;
+                showFeedback(false, `Yanlış! (-5 Puan) Doğru: ${gameState.currentAnswer}`);
+                triggerHaptic(false);
+            }
+
+            document.getElementById('score-display').innerText = gameState.score;
+
+            if (config.timeMode === 'per_q') {
+                clearInterval(gameState.timer);
+            }
+
+            setTimeout(() => {
+                nextQuestion();
+            }, 800);
+        }
+
+        function showFeedback(isCorrect, message) {
+            const banner = document.getElementById('feedback-banner');
+            banner.innerText = message;
+            banner.classList.remove('hidden', 'bg-emerald-500/20', 'text-emerald-300', 'border-emerald-500/40', 'bg-rose-500/20', 'text-rose-300', 'border-rose-500/40');
+            
+            if (isCorrect) {
+                banner.classList.add('bg-emerald-500/20', 'text-emerald-300', 'border', 'border-emerald-500/40');
+            } else {
+                banner.classList.add('bg-rose-500/20', 'text-rose-300', 'border', 'border-rose-500/40');
+            }
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedback-banner').classList.add('hidden');
+        }
+
+        function keypadInput(val) {
+            if (gameState.isProcessing) return;
+            gameState.typedInput += val;
+            document.getElementById('user-input-preview').innerText = gameState.typedInput;
+        }
+
+        function keypadClear() {
+            if (gameState.isProcessing) return;
+            gameState.typedInput = '';
+            document.getElementById('user-input-preview').innerText = '';
+        }
+
+        function submitKeypadAnswer() {
+            if (gameState.typedInput !== '' && !gameState.isProcessing) {
+                checkAnswer(gameState.typedInput);
+            }
+        }
+
+        function triggerHaptic(isCorrect) {
+            if (navigator.vibrate) {
+                navigator.vibrate(isCorrect ? 50 : [50, 50, 50]);
+            }
+        }
+
+        function startTimer() {
+            document.getElementById('timer-display').innerText = config.timeMode === 'none' ? '∞' : gameState.timeLeft + 's';
+            gameState.timer = setInterval(() => {
+                if (config.timeMode === 'none') return;
+                
+                gameState.timeLeft--;
+                document.getElementById('timer-display').innerText = gameState.timeLeft + 's';
+
+                if (gameState.timeLeft <= 0) {
+                    clearInterval(gameState.timer);
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(gameState.timer);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('hidden');
+            document.getElementById('final-score').innerText = gameState.score;
+            document.getElementById('stat-correct').innerText = gameState.correctCount;
+            document.getElementById('stat-wrong').innerText = gameState.wrongCount;
+        }
+
+        function exitGame() {
+            clearInterval(gameState.timer);
+            document.getElementById('screen-game').classList.add('hidden');
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-setup').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
