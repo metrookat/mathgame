@@ -84,7 +84,7 @@
             </div>
         </div>
 
-        <!-- Sayı Tipi (Çoklu Seçilebilir Yapı) -->
+        <!-- Sayı Tipi -->
         <div class="bg-slate-800 p-4 rounded-2xl border border-slate-700">
             <label class="block text-sm font-semibold mb-2 text-indigo-300">Sayı Tipi (Birden Fazla Seçilebilir)</label>
             <div class="grid grid-cols-3 gap-2 text-sm">
@@ -137,16 +137,21 @@
 
     <!-- OYUN EKRANI -->
     <div id="screen-game" class="hidden flex-1 flex flex-col justify-between p-5 max-w-lg mx-auto w-full">
-        <div class="flex justify-between items-center bg-slate-800 p-4 rounded-2xl border border-slate-700">
+        <!-- Üst Bar (Puan, Hak, Süre, Çıkış) -->
+        <div class="flex justify-between items-center bg-slate-800 p-3.5 rounded-2xl border border-slate-700">
             <div>
-                <span class="text-xs text-slate-400 block">Puan</span>
-                <span id="score-display" class="text-xl font-bold text-emerald-400">0</span>
+                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Puan</span>
+                <span id="score-display" class="text-lg font-black text-emerald-400">0</span>
             </div>
             <div class="text-center">
-                <span class="text-xs text-slate-400 block">Kalan Süre</span>
-                <span id="timer-display" class="text-xl font-bold text-amber-400">∞</span>
+                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Kalan Hak</span>
+                <span id="lives-display" class="text-base font-black tracking-widest">❤️❤️❤️</span>
             </div>
-            <button onclick="exitGame()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-2 rounded-xl">Çıkış</button>
+            <div class="text-center">
+                <span class="text-[10px] text-slate-400 block uppercase font-bold tracking-wider">Süre</span>
+                <span id="timer-display" class="text-lg font-black text-amber-400">∞</span>
+            </div>
+            <button onclick="exitGame()" class="text-xs bg-rose-500/20 text-rose-300 border border-rose-500/30 px-3 py-1.5 rounded-xl font-bold">Çıkış</button>
         </div>
 
         <div id="feedback-banner" class="hidden text-center py-2 px-4 rounded-xl font-black text-lg transition-all duration-200 my-2"></div>
@@ -205,6 +210,7 @@
             score: 0,
             correctCount: 0,
             wrongCount: 0,
+            maxWrong: 3,
             currentAnswer: 0,
             typedInput: '',
             timer: null,
@@ -212,7 +218,6 @@
             isProcessing: false
         };
 
-        // JavaScript Ondalık Hassasiyet Hatalarını Önleyen Yardımcı Fonksiyon
         function cleanNumber(val) {
             return Math.round((val + Number.EPSILON) * 100) / 100;
         }
@@ -244,8 +249,14 @@
             }
         }
 
+        function updateLivesDisplay() {
+            let remaining = gameState.maxWrong - gameState.wrongCount;
+            if (remaining < 0) remaining = 0;
+            let hearts = "❤️".repeat(remaining) + "🖤".repeat(gameState.maxWrong - remaining);
+            document.getElementById('lives-display').innerText = hearts;
+        }
+
         function startGame() {
-            // En az bir sayı tipi seçili mi kontrolü
             const isPos = document.getElementById('type-pos').checked;
             const isNeg = document.getElementById('type-neg').checked;
             if (!isPos && !isNeg) {
@@ -257,6 +268,8 @@
             gameState.wrongCount = 0;
             gameState.isProcessing = false;
             
+            updateLivesDisplay();
+
             let secVal = parseInt(document.getElementById('custom-seconds').value);
             config.customSeconds = (isNaN(secVal) || secVal < 1) ? 10 : secVal;
 
@@ -280,7 +293,6 @@
             nextQuestion();
         }
 
-        // Çoklu Sayı Tipi Seçimine Göre Sayı Üretici
         function generateNumber(digits) {
             const isPos = document.getElementById('type-pos').checked;
             const isNeg = document.getElementById('type-neg').checked;
@@ -293,12 +305,10 @@
 
             let num = Math.floor(Math.random() * (max - min + 1)) + min;
 
-            // Ondalıklı Sayı Üretimi (%50 İhtimalle)
             if (isDec && Math.random() > 0.5) {
                 num = cleanNumber(num / 10);
             }
 
-            // İşaret Belirleme
             if (isPos && isNeg) {
                 if (Math.random() > 0.5) num = -num;
             } else if (isNeg) {
@@ -378,13 +388,9 @@
             }
         }
 
-        // Akıllı Şık Üretici (Aynı Son Basamağa / Ondalığa Sahip Şıklar Üretir)
         function renderMultipleChoice(correctAns) {
             let options = [correctAns];
             const isInteger = Number.isInteger(correctAns);
-            
-            // Tam sayılarda 10'un katları eklenir ki son basamak hep aynı kalsın (örn: 216 -> 206, 226, 196)
-            // Ondalıklı sayılarda 1'in katları eklenir ki ondalık kısmı aynı kalsın (örn: 14.6 -> 13.6, 15.6, 12.6)
             const stepUnit = isInteger ? 10 : 1;
             
             const steps = [
@@ -394,7 +400,6 @@
                 stepUnit * 5, -stepUnit * 5
             ];
 
-            // Adımları karıştır
             steps.sort(() => Math.random() - 0.5);
 
             const isNegAllowed = document.getElementById('type-neg').checked;
@@ -404,7 +409,6 @@
 
                 let wrong = cleanNumber(correctAns + step);
 
-                // Negatif izin verilmiyorsa ve sonuç negatifse pozitife çevir
                 if (!isNegAllowed && wrong < 0) {
                     wrong = cleanNumber(correctAns + Math.abs(step));
                 }
@@ -414,7 +418,6 @@
                 }
             }
 
-            // Hâlâ 4 şık dolmadıysa ekstra çeldirici üret
             let fallbackCount = 1;
             while (options.length < 4) {
                 let wrong = cleanNumber(correctAns + (stepUnit * fallbackCount * 4));
@@ -422,7 +425,6 @@
                 fallbackCount++;
             }
 
-            // Şıkları Karıştır
             options.sort(() => Math.random() - 0.5);
 
             const container = document.getElementById('mc-container');
@@ -440,7 +442,6 @@
             if (gameState.isProcessing) return;
             gameState.isProcessing = true;
 
-            // Ondalıklı tolerans ile hassas cevap kontrolü
             const isCorrect = Math.abs(parseFloat(userAns) - gameState.currentAnswer) < 0.001;
 
             if (isCorrect) {
@@ -451,6 +452,7 @@
             } else {
                 gameState.score -= 5;
                 gameState.wrongCount++;
+                updateLivesDisplay();
                 showFeedback(false, `Yanlış! (-5 Puan) Doğru: ${gameState.currentAnswer}`);
                 triggerHaptic(false);
             }
@@ -461,9 +463,16 @@
                 clearInterval(gameState.timer);
             }
 
-            setTimeout(() => {
-                nextQuestion();
-            }, 800);
+            // 3 Yanlış Kontrolü
+            if (gameState.wrongCount >= gameState.maxWrong) {
+                setTimeout(() => {
+                    endGame();
+                }, 800);
+            } else {
+                setTimeout(() => {
+                    nextQuestion();
+                }, 800);
+            }
         }
 
         function showFeedback(isCorrect, message) {
